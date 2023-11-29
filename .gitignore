@@ -154,7 +154,7 @@ android/assets/scenarios/
 SaveFiles/
 
 # Visual Studio Code
-.vscode/
+# .vscode/
 /.github/workflows/node_modules/*
 
 # node.js (we only need these temporarily for the release build)
