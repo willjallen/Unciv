@@ -1,0 +1,45 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build_all",
+            "type": "shell",
+            "command": "./gradlew build",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "build_core",
+            "type": "shell",
+            "command": "./gradlew :core:build",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+            }
+        },
+        {
+            "label": "build_desktop",
+            "type": "shell",
+            "command": "./gradlew :desktop:build",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+            }
+        },
+        {
+            "label": "debug_desktop",
+            "type": "shell",
+            "command": "${workspaceFolder}\\.vscode\\debug_desktop.bat",
+            "problemMatcher": [],
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "build_core",
+                "build_desktop"
+            ]
+        },
+    ]
+}
+

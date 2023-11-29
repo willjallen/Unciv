@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "kotlin",
+            "request": "attach",
+            "name": "Debug Desktop (Attach)",
+            "hostName": "localhost",
+            "projectRoot": "${workspaceFolder}",
+            "port": 5005,
+            "timeout": 30000,
+            "preLaunchTask": "debug_desktop"
+
+        },
+        {
+            "type": "kotlin",
+            "request": "launch",
+            "name": "Debug Desktop",
+            "projectRoot": "${workspaceFolder}/desktop",
+            "mainClass": "com.unciv.app.desktop.DesktopLauncher",
+        }
+    ]
+}
