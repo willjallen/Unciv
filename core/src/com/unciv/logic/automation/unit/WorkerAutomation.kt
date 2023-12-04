@@ -106,7 +106,7 @@ class WorkerAutomation(
      *  value: The [BFS] searching from that city, whether successful or not.
      */
     //todo: If BFS were to deal in vectors instead of Tiles, we could copy this on cloning
-    private val bfsCache = HashMap<Vector2, BFS>()
+    private val astarCache = HashMap<Vector2, AStar>()
 
     //todo: UnitMovementAlgorithms.canReach still very expensive and could benefit from caching, it's not using BFS
 
@@ -382,20 +382,24 @@ class WorkerAutomation(
 
         for (toConnectCity in candidateCities) {
             val toConnectTile = toConnectCity.getCenterTile()
-            val bfs: BFS = bfsCache[toConnectTile.position] ?:
-                BFS(toConnectTile, isCandidateTilePredicate).apply {
+            val astar: AStar = astarCache[toConnectTile.position] ?:
+                AStar(toConnectTile,
+                    isCandidateTilePredicate,
+                    {from: Tile, to: Tile -> getRoadPathMovementCost(unit, from, to)},
+                    {from: Tile, to: Tile -> 0f}) // Heuristic left empty. If the search ever starts to hang the game, start here -- or add a maxSize.
+                    .apply {
                     maxSize = HexMath.getNumberOfTilesInHexagon(
                         WorkerAutomationConst.maxBfsReachPadding +
                             tilesOfConnectedCities.minOf { it.aerialDistanceTo(toConnectTile) }
                     )
-                    bfsCache[toConnectTile.position] = this@apply
+                    astarCache[toConnectTile.position] = this@apply
                 }
 
             while (true) {
                 for (cityTile in cityTilesToSeek.toList()) { // copy since we change while running
-                    if (!bfs.hasReachedTile(cityTile)) continue
+                    if (!astar.hasReachedTile(cityTile)) continue
                     // we have a winner!
-                    val pathToCity = bfs.getPathTo(cityTile)
+                    val pathToCity = astar.getPathTo(cityTile)
                     val roadableTiles = pathToCity.filter { it.getUnpillagedRoad() < bestRoadAvailable }
                     val tileToConstructRoadOn: Tile
                     if (currentTile in roadableTiles) tileToConstructRoadOn =
@@ -419,13 +423,13 @@ class WorkerAutomation(
                         tileToConstructRoadOn.startWorkingOnImprovement(improvement, civInfo, unit)
                     }
                     debug("WorkerAutomation: %s -> connect city %s to %s on %s",
-                        unit.label(), bfs.startingPoint.getCity()?.name, cityTile.getCity()!!.name, tileToConstructRoadOn)
+                        unit.label(), astar.startingPoint.getCity()?.name, cityTile.getCity()!!.name, tileToConstructRoadOn)
                     return true
                 }
-                if (bfs.hasEnded()) break // We've found another city that this one can connect to
-                bfs.nextStep()
+                if (astar.hasEnded()) break // We've found another city that this one can connect to
+                astar.nextStep()
             }
-            debug("WorkerAutomation: ${unit.label()} -> connect city ${bfs.startingPoint.getCity()?.name} failed at BFS size ${bfs.size()}")
+            debug("WorkerAutomation: ${unit.label()} -> connect city ${astar.startingPoint.getCity()?.name} failed at AStar size ${astar.size()}")
         }
 
         return false
