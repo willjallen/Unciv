@@ -338,14 +338,13 @@ class TechManager : IsPartOfGameInfoSerialization {
     private fun obsoleteOldUnits(techName: String) {
         // First build a map with obsoleted units to their (nation-specific) upgrade
         val ruleset = getRuleset()
-        fun BaseUnit.getEquivalentUpgradeOrNull(techName: String): BaseUnit? {
-            val unitUpgradesTo: String? = automaticallyUpgradedInProductionToUnitByTech(techName)
-            if (unitUpgradesTo == null)
-                return null
-            return civInfo.getEquivalentUnit(unitUpgradesTo!!)
+        fun BaseUnit.getEquivalentUpgradeOrNull(): BaseUnit? {
+            if (upgradesTo !in ruleset.units) return null  // also excludes upgradesTo==null
+            return civInfo.getEquivalentUnit(upgradesTo!!)
         }
         val obsoleteUnits = getRuleset().units.asSequence()
-            .map { it.key to it.value.getEquivalentUpgradeOrNull(techName) }
+            .filter { it.value.isObsoletedBy(techName) }
+            .map { it.key to it.value.getEquivalentUpgradeOrNull() }
             .toMap()
         if (obsoleteUnits.isEmpty()) return
 
